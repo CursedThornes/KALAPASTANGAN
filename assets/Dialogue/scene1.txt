@@ -1,0 +1,330 @@
+# KALAPASTANGAN - Scene 1: The Hallway
+# Commands: !expr, !shake, !flash, !set flag, !if flag -> label
+#            !trust who +/-n, !mind who +/-n
+#            !iftrust who >= n -> label, !ifmind who >= n -> label
+#            !timed seconds -> timeoutLabel, !end
+# Text effects: {shake}, {wave}, {red}, {gray}, {slow}, {wait=0.5}
+
+[start]
+!chapter FOOL | The Hallway
+!expr normal
+!trust maria =4
+!mind maria =3
+: The hallway was unusually quiet.
+: The only sounds were the faint hum of the fluorescent lights and the occasional creaking of the old building.
+MARIA: Mark?
+MARIA: May narinig ka ba?
+MARK: Hm? Ano 'yon?
+MARIA: Parang may naglalakad sa may hagdan.
+MARK: Baka estudyante lang.
+MARIA: Mark, wala na halos tao rito.
+MARK: Eh, baka may naiwan lang na teacher.
+MARIA: At this hour? Seriously?
+: Maria glanced toward the staircase. For a moment, she seemed hesitant.
+MARIA: ...Tingnan kaya natin?
+MARK: Bakit ba kailangan pa nating alamin?
+MARIA: Curious lang ako!
+MARK: Curious ka lang, pero ako 'yung pinapapunta mo?
+MARIA: HAHAHA! Tara na nga!
+MARK: Tsk. Sige na.
+
+* Sige. Pero ikaw ang mauuna. -> teasing
+* Paano kung may tao nga talaga roon? -> cautious
+* Uwi na tayo. Huwag na. -> reluctant
+
+[teasing]
+!set teasing
+!trust maria +1
+!mind maria +1
+MARK: Sige, pero ikaw ang mauuna.
+MARIA: Hala! Bakit ako?!
+MARK: Eh, ikaw naman ang may gustong pumunta.
+MARIA: Grabe ka talaga. Sige na nga!
+-> footsteps
+
+[cautious]
+!set cautious
+!trust maria +2
+MARK: Paano kung may tao nga talaga roon?
+MARIA: Eh di malalaman natin!
+MARK: That's not exactly reassuring.
+MARIA: HAHAHA! Huwag kang matakot. Nandito naman ako.
+-> footsteps
+
+[reluctant]
+!set reluctant
+!trust maria -1
+!mind maria +2
+MARK: Pwede bang umuwi na lang tayo?
+MARIA: Ang aga pa!
+MARK: Maaga? Halos wala nang tao sa school.
+MARIA: Five minutes lang! Promise!
+MARK: 'Yan din sinabi mo kanina.
+MARIA: This time, promise talaga!
+-> footsteps
+
+[footsteps]
+: Before you could say anything else, another sound echoed from the staircase.
+: Footsteps.
+: Slow, uneven footsteps.
+MARIA: ...
+MARK: Narinig mo 'yon?
+MARIA: Oo.
+: Maria's playful expression slowly faded.
+!expr nakikinig
+MARIA: Mark... may tao ba talaga roon?
+MARK: Hindi ko alam.
+: You both stood still, listening.
+: Then, another step.
+: And another.
+MARIA: ...Hindi na yata magandang ideya 'to.
+MARK: Ikaw ang may gusto nito, 'di ba?
+MARIA: Alam ko na nga!
+!shake
+: A faint shadow appeared at the far end of the staircase.
+!flash
+: For a brief moment, neither of you moved.
+MARIA: {shake}Mark...{/shake}
+: The shadow did not leave.
+MARIA: {red}Mark.{/red} {slow}Ano gagawin natin?{/slow}
+
+!timed 6.5 -> froze
+* Hawakan si Maria. -> hold
+* Tawagin kung sino man 'yon. -> call
+* Huwag kang gagalaw. -> stay
+
+[hold]
+!set held_maria
+!trust maria +2
+!mind maria -1
+: You took her wrist before either of you could think.
+MARK: Don't move.
+MARIA: ...Salamat.
+: Her pulse was fast. She did not pull away.
+-> afterCrisis
+
+[call]
+!set called_out
+!trust maria -1
+!mind maria +3
+!shake
+MARK: Sino'ng andun?!
+MARIA: Mark, {shake}tigil!{/shake}
+: The footsteps stopped. Then they started again, closer.
+-> afterCrisis
+
+[stay]
+!set stayed_still
+!mind maria +1
+: You did not move. You barely breathed.
+MARIA: ...Mark?
+MARK: Wait.
+: The shadow lingered at the edge of the light.
+-> afterCrisis
+
+[froze]
+!set froze
+!trust maria -2
+!mind maria +2
+: You stayed silent until the moment passed. Maria had to act on her own.
+MARIA: Mark? {shake}Mark!{/shake}
+: She grabbed your sleeve herself, unsure whether you would respond.
+-> afterCrisis
+
+[afterCrisis]
+: The shadow disappeared.
+MARK: ...Nakita mo rin?
+MARIA: Oo.
+!iftrust maria >= 6 -> close
+-> distant
+
+[close]
+: Maria stepped into your space and stayed there.
+MARIA: Huwag mo akong iwan.
+MARK: Hindi.
+-> mentalFork
+
+[distant]
+: Maria slowly stepped closer, then stopped short of you.
+MARIA: Please tell me may explanation ka para roon.
+MARK: Kung meron man, hindi ko rin alam.
+-> mentalFork
+
+[mentalFork]
+!ifmind maria >= 7 -> breaking
+!ifmind maria >= 5 -> frightened
+-> uneasy
+
+[uneasy]
+!expr nakikinig
+: The hallway fell silent once more.
+MARIA: ...Baka ilaw lang. Baka.
+MARK: Hindi yata.
+: Neither of you wanted to be the first to walk away.
+-> ending
+
+[frightened]
+!expr nakikinig
+!shake
+: Maria's hands would not stay still.
+MARIA: {shake}Hindi ko gusto 'to, Mark.{/shake}
+MARIA: Parang... may tumingin sa atin.
+MARK: Kung meron, nandito pa rin.
+: The quiet after that felt heavier than the footsteps.
+-> ending
+
+[breaking]
+!expr nakikinig
+!shake
+!flash
+: She was shaking hard enough that you could hear it in her voice.
+MARIA: {red}{shake}Iuwi mo na ako.{/shake}{/red}
+MARIA: Please. Ngayon na.
+MARK: Sige. Sige, alis na tayo.
+: But the hallway did not feel finished with you.
+-> ending
+
+[ending]
+!if froze -> lastFroze
+!if called_out -> lastCall
+!if held_maria -> lastHold
+-> lastStay
+
+[lastHold]
+: She still had not let go of you.
+!battle liyab
+-> afterBattle
+
+[lastCall]
+: Somewhere below, something had heard its name.
+!battle liyab
+-> afterBattle
+
+[lastStay]
+: You had waited. It had waited too.
+!battle liyab
+-> afterBattle
+
+[lastFroze]
+: You froze once. The dark remembered.
+!battle liyab
+-> afterBattle
+
+[afterBattle]
+!expr nakikinig
+: The hallway was quiet again. The hum of the lights came back first, then the smell of dust.
+: Maria was still holding her own sleeve, breathing like she had run up the stairs.
+MARIA: ...Mark.
+MARK: Andito lang ako.
+MARIA: Nakita mo ba 'yon? Yung... yung hindi na tao.
+MARK: Oo.
+: She did not ask anything else. She just listened to a building that had gone too quiet.
+!shake
+MARIA: {shake}May narinig ka pa?{/shake}
+: Somewhere below the stairs, something was moving again. Slowly. Deliberately.
+: Not footsteps this time. Something like a voice, practicing your name.
+!expr normal
+-> tellOrHide
+
+[tellOrHide]
+* Sabihin sa kanya ang totoo. -> honest
+* Basta umalis na tayo. -> leaveQuiet
+* Tanungin siya kung ano ang nakita niya. -> askHer
+
+[honest]
+!set told_truth
+!trust maria +2
+!mind maria -1
+MARK: Hindi lang ilaw 'yon, Maria.
+MARK: May bumangon doon. At hindi pa tapos.
+MARIA: Alam ko.
+: She looked at you for a long time and did not look away.
+MARIA: Salamat sa pagsabi ng totoo.
+-> secondBeat
+
+[leaveQuiet]
+!set hid_truth
+!trust maria -2
+!mind maria +2
+MARK: Wala 'yon. Baka pagod lang tayo.
+MARIA: ...
+MARIA: Sige. Kung 'yan ang gusto mong paniwalaan.
+: She did not sound convinced. She did not let go of your sleeve either.
+-> secondBeat
+
+[askHer]
+!set asked_her
+!trust maria +1
+!mind maria +2
+MARK: Ano'ng nakita mo?
+MARIA: Hindi ko alam kung paano sasabihin.
+MARIA: Parang... kilala niya ako.
+MARK: Kilala?
+MARIA: Huwag na. Please. {slow}Huwag na nating pag-usapan.{/slow}
+-> secondBeat
+
+[secondBeat]
+!expr nakikinig
+: The voice from below got clearer. It was not calling anyone in particular.
+: It was counting.
+MARK: Maria, kung may mangyari...
+MARIA: Huwag mo akong seseryosohan ng ganyan.
+!shake
+MARIA: {shake}Hindi ako aalis nang wala ka.{/shake}
+-> stayOrGo
+
+[stayOrGo]
+* Hawakan mo ang kamay niya at bumaba. -> together
+* Sabihin mong maghintay siya. Ikaw ang lalabas. -> alone
+* Sabihin mong siya ang mauna. -> sendHer
+
+[together]
+!set together
+!trust maria +2
+: You took her hand. She held on like it was the only thing keeping her standing.
+MARK: Sabay.
+MARIA: Sabay.
+: At the bottom of the stairs, the air had weight.
+-> awaken
+
+[alone]
+!set alone
+!trust maria -3
+!mind maria +1
+MARK: Hintayin mo ako dito.
+MARIA: Mark, hindi—
+MARK: Maria. Please.
+: She let go first. You wished she had not.
+: You went down alone. The dark did not seem to mind.
+-> awaken
+
+[sendHer]
+!set sent_her
+!trust maria -2
+!mind maria +1
+MARK: Ikaw ang mauna. Ako ang susunod.
+MARIA: Ayokong umalis nang ganito.
+MARK: Maria, please.
+: For a moment she did not move. Then she turned, and the stairs took her slowly.
+: You told yourself she would be safer. You were not sure you believed it.
+-> awaken
+
+[awaken]
+!expr nakikinig
+!flash
+!shake
+: The shadow at the bottom of the stairs had changed shape.
+: It had a face now. It had your face, almost.
+MARIA: (from behind you) Mark— get back—
+!expr normal
+!battle dilim
+: The silence after the second battle broke in a voice that sounded like the building itself.
+MARIA: Mark... hindi pa tapos.
+MARK: Alam ko.
+: The hallway answered with a cry from somewhere below the stairs.
+!chapter SIGAW | The Last Echo
+!expr normal
+MARIA: This time, sabay tayo.
+MARK: Sabay.
+!battle sigaw
+!end

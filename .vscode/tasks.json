@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build KALAPASTANGAN for launch",
+            "type": "process",
+            "command": "${workspaceFolder}\\gradlew.bat",
+            "args": [
+                ":lwjgl3:classes"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

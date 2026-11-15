@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch KALAPASTANGAN",
+            "request": "launch",
+            "mainClass": "com.java.KALAPASTANGAN.lwjgl3.Lwjgl3Launcher",
+            "projectName": "KALAPASTANGAN-lwjgl3",
+            "preLaunchTask": "Build KALAPASTANGAN for launch",
+            "classPaths": [
+                "${workspaceFolder}/lwjgl3/build/classes/java/main",
+                "${workspaceFolder}/core/build/classes/java/main",
+                "$Runtime"
+            ],
+            "cwd": "${workspaceFolder}/assets",
+            "vmArgs": [
+                "--enable-native-access=ALL-UNNAMED",
+                "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"
+            ]
+        }
+    ]
+}
