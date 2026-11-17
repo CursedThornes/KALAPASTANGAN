@@ -101,6 +101,11 @@ which bundles its own runtime.
 
 The scene script is [assets/Dialogue/scene1.txt](./assets/Dialogue/scene1.txt). The demo opens on its FOOL chapter card, then follows Maria and Mark's hallway conversation and its three branching responses. The shadow reveal uses the script's `!shake` command to shake the full scene. The scene's ending branches trigger the Liyab battle: its track starts immediately as the box closes in, followed by a quiet fake-out and a beat-34 drop at about 11.91 seconds. The battle then moves through Ignition, Lattice, Spin, Collapse, and the LIYAB finale, with three timed Attack/Defend/Reason menus. The timer and pressure bars sit above the choices; timeout selects Defend. Three attacks can defeat the 24-HP boss, while three Reason choices spare it. The fake-out attacks can damage you; press F to toggle temporary god mode (the heart turns blue) while viewing the chart. During dodge rounds, move with WASD and hold Shift to slow down. Press F3 during the battle to cycle screen effects through full, half, and off. Camera shake is reduced, tilt/zoom/pan settle smoothly, and the arena is fitted within the screen during camera movement.
 
+## Phase 1 ('LIYAB')
+
+Phase 1 follows five beat-synced dodge sequences. `IGNITION` introduces falling attacks, aimed shots, and sweeping beams. `LATTICE` adds beam patterns and spinning crosses. `STANDSTILL` mixes timed blasts with a brief pause before the attacks resume. `COLLAPSE` fills the arena with imploding rings, weaving shots, and spinning attacks. `INFERNO`
+ brings the patterns together at higher speed, with little room to rest. Three Attack/Defend/Reason menus appear between sequences.
+
 ## Phase 2 (`DILIM`)
 
 When the first fight resolves, the story picks straight back up: Mark and Maria talk in the hallway across two three-card choices (the same fanned card hand as the first scene), then `!battle dilim` in the script drops the box back into the arena for phase 2.
