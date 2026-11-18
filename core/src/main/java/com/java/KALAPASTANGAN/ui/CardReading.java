@@ -52,7 +52,11 @@ public class CardReading implements Disposable {
             + "para may magsimula. Ngunit may mga bagay ring ayaw mamatay, at bumabalik sila sa dilim."
     };
 
-    private static final String[] ROW_LABELS = { "MUSIC", "SFX", "TEXT SPEED", "FULLSCREEN" };
+    private static final String[] ROW_LABELS = {
+        "MUSIC", "SFX", "TEXT SPEED", "FULLSCREEN", "BATTLE CONTROL"
+    };
+    // 0-2 slider, 3-4 toggle
+    private static final int ROWS = ROW_LABELS.length;
     private static final String[][] CREDIT_LINES = {
         { "STORY", "Andrei" },
         { "ART", "Andrei" },
@@ -189,7 +193,8 @@ public class CardReading implements Disposable {
         if (row == 0) GameSettings.music = MathUtils.clamp(GameSettings.music + dir * 0.05f, 0f, 1f);
         else if (row == 1) GameSettings.sfx = MathUtils.clamp(GameSettings.sfx + dir * 0.05f, 0f, 1f);
         else if (row == 2) GameSettings.textSpeed = MathUtils.clamp(GameSettings.textSpeed + dir * 0.1f, 0.5f, 2f);
-        else toggleFullscreen();
+        else if (row == 3) toggleFullscreen();
+        else GameSettings.battleMouse = !GameSettings.battleMouse;   // WASD o cursor sa laban
         GameSettings.save();
     }
 
@@ -206,11 +211,11 @@ public class CardReading implements Disposable {
             return;
         }
         if (mode == SETTINGS) {
-            if (k == Input.Keys.UP || k == Input.Keys.W) selRow = (selRow + 3) % 4;
-            else if (k == Input.Keys.DOWN || k == Input.Keys.S) selRow = (selRow + 1) % 4;
+            if (k == Input.Keys.UP || k == Input.Keys.W) selRow = (selRow + ROWS - 1) % ROWS;
+            else if (k == Input.Keys.DOWN || k == Input.Keys.S) selRow = (selRow + 1) % ROWS;
             else if (k == Input.Keys.LEFT || k == Input.Keys.A) adjust(selRow, -1);
             else if (k == Input.Keys.RIGHT || k == Input.Keys.D) adjust(selRow, 1);
-            else if ((k == Input.Keys.ENTER || k == Input.Keys.SPACE) && selRow == 3) adjust(3, 1);
+            else if ((k == Input.Keys.ENTER || k == Input.Keys.SPACE) && selRow >= 3) adjust(selRow, 1);
         } else if (mode == READING) {
             if (k == Input.Keys.LEFT || k == Input.Keys.A) shift(-1);
             else if (k == Input.Keys.RIGHT || k == Input.Keys.D) shift(1);
@@ -232,15 +237,15 @@ public class CardReading implements Disposable {
             return;
         }
         if (mode == SETTINGS) {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < ROWS; i++) {
                 float cy = rowCenter(i);
                 if (contains(x, y, panelX + 14f, cy - 24f, panelW - 28f, 48f)) {
                     selRow = i;
                     if (i < 3 && x >= sliderX - 14f && x <= sliderX + sliderW + 14f) {
                         dragRow = i;
                         setSlider(i, x);
-                    } else if (i == 3) {
-                        adjust(3, 1);
+                    } else if (i >= 3) {
+                        adjust(i, 1);
                     }
                     return;
                 }
@@ -260,8 +265,13 @@ public class CardReading implements Disposable {
         }
     }
 
+    // lima na ang row, kaya maluwag pa rin ang pagitan kahit maliit ang window
+    private float rowGap() {
+        return MathUtils.clamp((panelH - 190f) / 4f, 34f, 58f);
+    }
+
     private float rowCenter(int i) {
-        return panelY + panelH - 140f - i * 58f;
+        return panelY + panelH - 140f - i * rowGap();
     }
 
     private void layout() {
@@ -316,7 +326,7 @@ public class CardReading implements Disposable {
         if (progress > 0.9f) textTime += delta;
 
         if (mode == SETTINGS && open && progress > 0.9f && moved) {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < ROWS; i++) {
                 if (contains(mx, my, panelX + 14f, rowCenter(i) - 24f, panelW - 28f, 48f)) selRow = i;
             }
         }
@@ -388,7 +398,7 @@ public class CardReading implements Disposable {
     }
 
     private void drawSettings(SpriteBatch batch, float offsetY, float alpha, float textX) {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < ROWS; i++) {
             float cy = rowCenter(i) + offsetY;
             boolean on = i == selRow;
             float ra = (on ? 1f : 0.62f) * alpha;
@@ -401,9 +411,12 @@ public class CardReading implements Disposable {
             bodyFont.setColor(0.9f, 0.88f, 0.82f, ra);
             bodyFont.draw(batch, ROW_LABELS[i], textX + 10f, cy + bodyFont.getCapHeight() / 2f);
 
-            if (i == 3) {
-                bodyFont.draw(batch, Gdx.graphics.isFullscreen() ? "ON" : "OFF",
-                    sliderX, cy + bodyFont.getCapHeight() / 2f);
+            if (i >= 3) {
+                // toggle rows: fullscreen at control scheme
+                String toggle = i == 3
+                    ? (Gdx.graphics.isFullscreen() ? "ON" : "OFF")
+                    : (GameSettings.battleMouse ? "CURSOR" : "WASD");
+                bodyFont.draw(batch, toggle, sliderX, cy + bodyFont.getCapHeight() / 2f);
                 continue;
             }
             float n = i == 0 ? GameSettings.music

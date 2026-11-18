@@ -203,6 +203,9 @@ public class AustineBossBattle extends ScreenAdapter {
     private int battlePhase;
     private float battleMix, battleUi, phaseT, hitFlash, shakeAmount, battleMusicMix, cameraFxBlend;
     private float arenaScreenTop;
+    // paraan ng pag-mapa ng cursor papasok sa arena
+    private float arenaViewCx, arenaViewCy, arenaPivotX, arenaPivotY, arenaRot, arenaScale = 1f;
+    private boolean arenaPointerReady;
     private int menuSel, enemyHp = ENEMY_MAX, trust, round;
     private boolean defending, battleMusicStarted, openingPending, openingRoundActive;
     private boolean phaseTwo, phaseThree;
@@ -515,6 +518,19 @@ public class AustineBossBattle extends ScreenAdapter {
         int x = Gdx.input.getX(), y = Gdx.input.getY();
         return game.isWindowActive() && x >= 0 && y >= 0
             && x < Gdx.graphics.getWidth() && y < Gdx.graphics.getHeight();
+    }
+
+    // camera space -> loob ng arena, para sumunod ang puso sa cursor
+    private void updateArenaPointer(boolean available) {
+        if (battlePhase == B_NONE || !available || !arenaPointerReady || arenaScale <= 0.0001f) {
+            arena.clearPointer();
+            return;
+        }
+        float dx = mouse.x - arenaViewCx, dy = mouse.y - arenaViewCy;
+        float c = MathUtils.cosDeg(arenaRot), s = MathUtils.sinDeg(arenaRot);
+        float ux = (dx * c + dy * s) / arenaScale;
+        float uy = (-dx * s + dy * c) / arenaScale;
+        arena.setPointer(arenaPivotX + ux, arenaPivotY + uy);
     }
 
     private boolean hit(float x, float y, float w, float h) {
@@ -1513,6 +1529,7 @@ public class AustineBossBattle extends ScreenAdapter {
         lastMx = mxs;
         lastMy = mys;
         toWorld(mxs, mys);
+        updateArenaPointer(pointerAvailable);
 
         if (runner.consumeShake()) {
             characterShakeTime = SHAKE_TIME;
@@ -1741,6 +1758,14 @@ public class AustineBossBattle extends ScreenAdapter {
                 .rotate(0f, 0f, 1f, rot)
                 .scale(worldScale, worldScale, 1f)
                 .translate(-pivotX, -pivotY, 0f);
+            // itabi ang kaparehong transform para maibalik ang cursor papasok sa arena
+            arenaViewCx = viewCx;
+            arenaViewCy = viewCy;
+            arenaPivotX = pivotX;
+            arenaPivotY = pivotY;
+            arenaRot = rot;
+            arenaScale = worldScale;
+            arenaPointerReady = true;
             arenaScreenTop = viewCy + (acy - pivotY) * worldScale + extent * worldScale;
             arenaTransform.set(worldTransform);
             if (boxSpin != 0f) {

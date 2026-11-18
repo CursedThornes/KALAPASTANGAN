@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
+import com.java.KALAPASTANGAN.GameSettings;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,9 +26,10 @@ public class BattleArena {
     // tuning
     private static final float L = 300f;            // local arena size
     private static final float HIT_R = 3.6f;        // heart hitbox radius (tiny, bullet-hell style)
-    private static final float SPEED = 215f;        // heart speed, local units / s
-    private static final float SLOW = 92f;          // while holding SHIFT
-    private static final float BASE_DAMAGE = 4f;
+    private static final float SPEED = 260f;        // heart speed, local units / s
+    private static final float SLOW = 112f;         // while holding SHIFT
+    private static final float CURSOR_GAIN = 1f;    // parehas na bilis sa WASD, walang bentahe
+    private static final float BASE_DAMAGE = 1f;
     private static final float IFRAMES = 0.9f;
     private static final int HEAL_AMOUNT = 4;
     private static final float BEAM_LEN = 480f;
@@ -167,6 +169,9 @@ public class BattleArena {
     private float dmgMul = 1f;
     private boolean god, hitPending;
     private float hx = L / 2f, hy = L / 2f, hurt;
+    // cursor mode: posisyon ng mouse sa loob ng playfield
+    private boolean pointerValid;
+    private float pointerLX, pointerLY;
 
     private float preT, roundT, roundLen, outT, deadT, songAnchor, lastSong = -1f;
     private float openingTime, dropImpact;
@@ -979,21 +984,53 @@ public class BattleArena {
 
     // heart
 
+    // world -> local na playfield (kaparehong space ng wx()/wy())
+    public void setPointer(float worldX, float worldY) {
+        if (k <= 0f) {
+            pointerValid = false;
+            return;
+        }
+        pointerLX = (worldX - ax - tpX) / k;
+        pointerLY = (worldY - ay - tpY) / k;
+        pointerValid = true;
+    }
+
+    public void clearPointer() {
+        pointerValid = false;
+    }
+
     private void moveHeart(float d) {
-        float mx = 0f, my = 0f;
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) mx -= 1f;
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) mx += 1f;
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) my += 1f;
-        if (Gdx.input.isKeyPressed(Input.Keys.S)) my -= 1f;
         boolean slow = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
         float sp = slow ? SLOW : SPEED;
-        float len = (float) Math.sqrt(mx * mx + my * my);
-        if (len > 1f) {
-            mx /= len;
-            my /= len;
+        if (GameSettings.battleMouse && pointerValid) {
+            // cursor: sumusunod sa mouse, pero hindi lalampas sa bilis ng puso
+            float dx = pointerLX - hx, dy = pointerLY - hy;
+            float len = (float) Math.sqrt(dx * dx + dy * dy);
+            if (len > 0.001f) {
+                float step = Math.min(len, sp * CURSOR_GAIN * d);
+                if (step >= len) {
+                    // abot na, dumikit agad sa cursor para walang huling lag
+                    hx = pointerLX;
+                    hy = pointerLY;
+                } else {
+                    hx += dx / len * step;
+                    hy += dy / len * step;
+                }
+            }
+        } else {
+            float mx = 0f, my = 0f;
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) mx -= 1f;
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) mx += 1f;
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) my += 1f;
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) my -= 1f;
+            float len = (float) Math.sqrt(mx * mx + my * my);
+            if (len > 1f) {
+                mx /= len;
+                my /= len;
+            }
+            hx += mx * sp * d;
+            hy += my * sp * d;
         }
-        hx += mx * sp * d;
-        hy += my * sp * d;
         hx = MathUtils.clamp(hx, 5f, L - 5f);
         hy = MathUtils.clamp(hy, 5f, L - 5f);
         if (spinAng != 0f) clampToSpinBox();
@@ -1021,7 +1058,7 @@ public class BattleArena {
         addRing(hx, hy, 6f, 90f, 0.45f, 1, 0.8f, false);
         fxHit();
         if (god) return;
-        hp -= Math.max(1, Math.round(BASE_DAMAGE * dmgMul));
+        hp -= (int) BASE_DAMAGE;                       // isang HP lang bawat tama, kahit anong phase
         if (hp <= 0) {
             hp = 0;
             state = ST_DEAD;
