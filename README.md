@@ -56,12 +56,6 @@ art and voice lines. Sprite file names follow the `!expr` value in the dialogue 
 and portraits are registered per speaker in `AustineBossBattle` (`portraits.put("MARIA", ...)`) so a new
 character is one file plus one line. The Liyab fight uses `Austine Phase 1.mp3` and its baked `Austine_Phase_1.vis` in `assets/Audio/Music`; regenerate the visualizer with `python tools/make_vis.py "assets/Audio/Music/Austine Phase 1.mp3" assets/Audio/Music/Austine_Phase_1.vis`.
 
-## Tests
-
-`./gradlew core:test` runs the unit tests: the chart timings (every phase's section and menu
-boundaries against the measured beats) and the dialogue parser (commands, choices, `!timed`, and the
-error cases, plus the shipped `scene1.txt`). `.github/workflows/build.yml` compiles, tests and builds
-the jar on every push and pull request.
 
 ## Gradle
 
