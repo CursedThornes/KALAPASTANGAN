@@ -16,11 +16,12 @@ Everything lives under `core/src/main/java/com/java/KALAPASTANGAN`:
 ```
 KALAPASTANGAN/          app shell: Main (game + screen transitions), GameScreen, GameSettings
   battle/               the fights: AustineBossBattle (screens, phases, HUD, glitches),
-                        BattleArena (charts, bullets, bones, fx), BeatViz (baked visualizer)
+                        BattleArena (bullets, bones, fx), BattleChart (the phase tables plus
+                        the beat/section timing and camera-fit maths), BeatViz (baked visualizer)
   dialogue/             the script engine: DialogueScript (parser + nodes), DialogueRunner
                         (playback state), RichText (inline markup layout)
-  ui/                   everything outside a fight: MenuScreen, MenuIntro, WarningScreen,
-                        BuiltWithScreen, CardReading
+  ui/                   everything outside a fight: MenuScreen, MenuIntro, MenuTextures (the
+                        procedurally drawn textures), WarningScreen, BuiltWithScreen, CardReading
 ```
 
 Supporting folders:
@@ -54,6 +55,13 @@ with `.gitkeep`); the two sprites and the portrait in the repo are Maria's, and 
 art and voice lines. Sprite file names follow the `!expr` value in the dialogue script (`normal`, `nakikinig`),
 and portraits are registered per speaker in `AustineBossBattle` (`portraits.put("MARIA", ...)`) so a new
 character is one file plus one line. The Liyab fight uses `Austine Phase 1.mp3` and its baked `Austine_Phase_1.vis` in `assets/Audio/Music`; regenerate the visualizer with `python tools/make_vis.py "assets/Audio/Music/Austine Phase 1.mp3" assets/Audio/Music/Austine_Phase_1.vis`.
+
+## Tests
+
+`./gradlew core:test` runs the unit tests: the chart timings (every phase's section and menu
+boundaries against the measured beats) and the dialogue parser (commands, choices, `!timed`, and the
+error cases, plus the shipped `scene1.txt`). `.github/workflows/build.yml` compiles, tests and builds
+the jar on every push and pull request.
 
 ## Gradle
 

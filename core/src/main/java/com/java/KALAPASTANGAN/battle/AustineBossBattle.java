@@ -3,6 +3,7 @@ import com.java.KALAPASTANGAN.dialogue.RichText;
 import com.java.KALAPASTANGAN.dialogue.DialogueScript;
 import com.java.KALAPASTANGAN.dialogue.DialogueRunner;
 import com.java.KALAPASTANGAN.ui.MenuScreen;
+import com.java.KALAPASTANGAN.ui.MenuTextures;
 import com.java.KALAPASTANGAN.GameSettings;
 import com.java.KALAPASTANGAN.Main;
 
@@ -252,8 +253,8 @@ public class AustineBossBattle extends ScreenAdapter {
         topLineRegion = new TextureRegion(topLine, 8, 151, 650, 47);
         choiceIndicator = loadTexture("Images/UI/ChoiceIndicator/TarotCardIndicator.png");
         choiceCardBack = loadTexture("Images/Cards/Choice/BackCards.png");
-        grain = createGrain();
-        vignette = createVignette();
+        grain = MenuTextures.grain(GRAIN_SIZE);
+        vignette = MenuTextures.vignette();
 
         // isang folder kada character: Images/Characters/<NAME>/{Sprites,Portraits}
         sprites.put("normal", loadTexture("Images/Characters/MARIA/Sprites/normal.png"));
@@ -913,7 +914,7 @@ public class AustineBossBattle extends ScreenAdapter {
         setBattleText(menuFlavor());
     }
 
-    // kung walang natapos, kung sino ang mas nauna, sya na
+    // kung walang natapos, kung sino ang nauna, sya na
     private void resolveOutcome() {
         float trustFrac = trust / (float) TRUST_NEEDED;
         float harmFrac = (enemyMax() - enemyHp) / (float) enemyMax();
@@ -2579,43 +2580,6 @@ public class AustineBossBattle extends ScreenAdapter {
         batch.draw(pixel, x, y + height - thickness, width, thickness);
         batch.draw(pixel, x, y, thickness, height);
         batch.draw(pixel, x + width - thickness, y, thickness, height);
-    }
-
-    private Texture createGrain() {
-        Pixmap pm = new Pixmap(GRAIN_SIZE, GRAIN_SIZE, Pixmap.Format.RGBA8888);
-        pm.setBlending(Pixmap.Blending.None);
-        for (int y = 0; y < GRAIN_SIZE; y++) {
-            for (int x = 0; x < GRAIN_SIZE; x++) {
-                float shade = MathUtils.randomBoolean() ? 1f : 0f;
-                pm.setColor(shade, shade, shade, MathUtils.random(0f, 0.08f));
-                pm.drawPixel(x, y);
-            }
-        }
-        Texture t = new Texture(pm);
-        t.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-        t.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        pm.dispose();
-        return t;
-    }
-
-    private Texture createVignette() {
-        final int w = 256, h = 144;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        pm.setBlending(Pixmap.Blending.None);
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                float nx = (x + 0.5f) / w * 2f - 1f;
-                float ny = (y + 0.5f) / h * 2f - 1f;
-                float d = (float) Math.sqrt(nx * nx * 0.75f + ny * ny * 0.9f);
-                float a = MathUtils.clamp((d - 0.55f) / 0.8f, 0f, 1f);
-                pm.setColor(0f, 0f, 0f, a * a * 0.55f);
-                pm.drawPixel(x, y);
-            }
-        }
-        Texture t = new Texture(pm);
-        t.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        pm.dispose();
-        return t;
     }
 
     // screen lifecycle

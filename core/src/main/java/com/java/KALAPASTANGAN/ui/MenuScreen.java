@@ -97,7 +97,6 @@ public class MenuScreen extends ScreenAdapter {
     private static final boolean PLAY_INTRO = true;
     private static boolean introPlayed;
     private static final float MONO = 1f;
-    private static final int DRIPS = 16, BATS = 14;
     private static final String MONO_VERT =
         "attribute vec4 a_position;\nattribute vec4 a_color;\nattribute vec2 a_texCoord0;\n"
             + "uniform mat4 u_projTrans;\nvarying vec4 v_color;\nvarying vec2 v_texCoords;\n"
@@ -232,10 +231,6 @@ public class MenuScreen extends ScreenAdapter {
     private final float[] snowV = new float[SNOW_COUNT], snowS = new float[SNOW_COUNT];
     private final float[] snowP = new float[SNOW_COUNT];
     private final float[] snowKick = new float[SNOW_COUNT];
-    private final float[] dripX = new float[DRIPS], dripY = new float[DRIPS], dripV = new float[DRIPS],
-        dripLen = new float[DRIPS], dripW = new float[DRIPS];
-    private final float[] batX = new float[BATS], batY = new float[BATS], batVX = new float[BATS],
-        batVY = new float[BATS], batS = new float[BATS], batP = new float[BATS];
 
     private final float[] lightningX = new float[LIGHTNING_SEGMENT_COUNT + 1];
     private final float[] lightningY = new float[LIGHTNING_SEGMENT_COUNT + 1];
@@ -247,7 +242,7 @@ public class MenuScreen extends ScreenAdapter {
     private float time, grainU, grainV, labelA, noSaveT, clickFlash, parX, parY;
     private float beatShakeX, beatShakeY, beatZoom = 1f;
     private float lastSnowPunch;
-    private float dropT, dropSlow, dropCooldown, goPunch, dripCooldown, batCooldown, sigilRot;
+    private float dropT, dropSlow, dropCooldown, goPunch, sigilRot;
     private float gothR = 330f, clockJolt;
     private float introFlash, entryT = 10f, clockDir = 1f, hourSpin, minSpin, secSpin, secKick;
     private boolean clockInitialized;
@@ -294,13 +289,13 @@ public class MenuScreen extends ScreenAdapter {
             cardW[i] = CARD_H * t.getWidth() / t.getHeight();
         }
 
-        soft = createSoftCircle();
+        soft = MenuTextures.softCircle();
         softRegion = new TextureRegion(soft);
-        grain = createGrain();
-        vignette = createVignette();
-        ring = createRing();
+        grain = MenuTextures.grain(GRAIN_SIZE);
+        vignette = MenuTextures.vignette();
+        ring = MenuTextures.ring();
         ringRegion = new TextureRegion(ring);
-        bloodVignette = createBloodVignette();
+        bloodVignette = MenuTextures.bloodVignette();
 
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pm.setColor(Color.WHITE);
@@ -333,7 +328,6 @@ public class MenuScreen extends ScreenAdapter {
             snowS[i] = MathUtils.random(1.5f, 3.2f);
             snowP[i] = MathUtils.random(6.28f);
         }
-        for (int i = 0; i < DRIPS; i++) dripLen[i] = -1f;
 
         reading = new CardReading(cardTextures);
         layoutDirty = true;
@@ -450,102 +444,6 @@ public class MenuScreen extends ScreenAdapter {
         font.getData().setScale(1f / FONT_QUALITY);
         font.setUseIntegerPositions(false);
         return font;
-    }
-
-    private Texture createSoftCircle() {
-        final int size = 32;
-        Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
-        pm.setBlending(Pixmap.Blending.None);
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                float dx = (x + 0.5f) / size * 2f - 1f;
-                float dy = (y + 0.5f) / size * 2f - 1f;
-                float alpha = MathUtils.clamp(1f - (float) Math.sqrt(dx * dx + dy * dy), 0f, 1f);
-                pm.setColor(1f, 1f, 1f, alpha * alpha);
-                pm.drawPixel(x, y);
-            }
-        }
-        Texture texture = new Texture(pm);
-        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        pm.dispose();
-        return texture;
-    }
-
-    private Texture createGrain() {
-        Pixmap pm = new Pixmap(GRAIN_SIZE, GRAIN_SIZE, Pixmap.Format.RGBA8888);
-        pm.setBlending(Pixmap.Blending.None);
-        for (int y = 0; y < GRAIN_SIZE; y++) {
-            for (int x = 0; x < GRAIN_SIZE; x++) {
-                float shade = MathUtils.randomBoolean() ? 1f : 0f;
-                pm.setColor(shade, shade, shade, MathUtils.random(0f, 0.08f));
-                pm.drawPixel(x, y);
-            }
-        }
-        Texture t = new Texture(pm);
-        t.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-        t.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        pm.dispose();
-        return t;
-    }
-
-    private Texture createVignette() {
-        final int vw = 256, vh = 144;
-        Pixmap pm = new Pixmap(vw, vh, Pixmap.Format.RGBA8888);
-        pm.setBlending(Pixmap.Blending.None);
-        for (int y = 0; y < vh; y++) {
-            for (int x = 0; x < vw; x++) {
-                float nx = (x + 0.5f) / vw * 2f - 1f;
-                float ny = (y + 0.5f) / vh * 2f - 1f;
-                float d = (float) Math.sqrt(nx * nx * 0.75f + ny * ny * 0.9f);
-                float a = MathUtils.clamp((d - 0.55f) / 0.8f, 0f, 1f);
-                pm.setColor(0f, 0f, 0f, a * a * 0.55f);
-                pm.drawPixel(x, y);
-            }
-        }
-        Texture t = new Texture(pm);
-        t.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        pm.dispose();
-        return t;
-    }
-
-    private Texture createRing() {
-        final int size = 512;
-        Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
-        pm.setBlending(Pixmap.Blending.None);
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                float dx = (x + 0.5f) / size * 2f - 1f;
-                float dy = (y + 0.5f) / size * 2f - 1f;
-                float distance = (float) Math.sqrt(dx * dx + dy * dy);
-                float alpha = MathUtils.clamp(1f - Math.abs(distance - 0.92f) / 0.025f, 0f, 1f);
-                pm.setColor(1f, 1f, 1f, alpha * alpha);
-                pm.drawPixel(x, y);
-            }
-        }
-        Texture texture = new Texture(pm);
-        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        pm.dispose();
-        return texture;
-    }
-
-    private Texture createBloodVignette() {
-        final int width = 256, height = 144;
-        Pixmap pm = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-        pm.setBlending(Pixmap.Blending.None);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                float nx = (x + 0.5f) / width * 2f - 1f;
-                float ny = (y + 0.5f) / height * 2f - 1f;
-                float distance = (float) Math.sqrt(nx * nx * 0.75f + ny * ny * 0.9f);
-                float alpha = MathUtils.clamp((distance - 0.4f) / 0.75f, 0f, 1f);
-                pm.setColor(0.08f, 0.08f, 0.08f, alpha * alpha * 0.85f);
-                pm.drawPixel(x, y);
-            }
-        }
-        Texture texture = new Texture(pm);
-        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        pm.dispose();
-        return texture;
     }
 
     // helpers
@@ -1007,7 +905,6 @@ public class MenuScreen extends ScreenAdapter {
             titleW * (1f + (titlePulse - 1f) * 0.5f), titleAlpha);
 
         drawFan(b, t);
-        drawGothicFront(b, ui);
         if (chosen < 0) drawLabel(b);
 
         reading.draw(b);
@@ -1091,8 +988,6 @@ public class MenuScreen extends ScreenAdapter {
         dropCooldown = 8f;
         lightningCooldown = 0f;
         clockDir = -6f;
-        for (int i = 0; i < 8; i++) spawnDrip();
-        for (int i = 0; i < 6; i++) spawnBat();
     }
 
     private void drawExitConfirmation(SpriteBatch batch) {
@@ -1167,32 +1062,6 @@ public class MenuScreen extends ScreenAdapter {
         }
     }
 
-    private void spawnDrip() {
-        for (int i = 0; i < DRIPS; i++) {
-            if (dripLen[i] >= 0f) continue;
-            dripX[i] = MathUtils.random(visX, visX + visW);
-            dripY[i] = visY + visH - MathUtils.random(0f, 30f);
-            dripV[i] = MathUtils.random(60f, 200f);
-            dripLen[i] = 0f;
-            dripW[i] = MathUtils.random(2.5f, 5f);
-            return;
-        }
-    }
-
-    private void spawnBat() {
-        for (int i = 0; i < BATS; i++) {
-            if (batS[i] > 0f) continue;
-            boolean fromLeft = MathUtils.randomBoolean();
-            batX[i] = fromLeft ? visX - 60f : visX + visW + 60f;
-            batY[i] = visY + visH * MathUtils.random(0.45f, 0.95f);
-            batVX[i] = (fromLeft ? 1f : -1f) * MathUtils.random(420f, 780f);
-            batVY[i] = MathUtils.random(-90f, 90f);
-            batS[i] = MathUtils.random(0.7f, 1.5f);
-            batP[i] = MathUtils.random(6.28f);
-            return;
-        }
-    }
-
     private void updateGothic(float delta) {
         if (!clockInitialized) {
             java.time.LocalTime now = java.time.LocalTime.now();
@@ -1210,8 +1079,6 @@ public class MenuScreen extends ScreenAdapter {
             clockDir = -6f;
             dropCooldown = 8f;
             lightningCooldown = 0f;
-            for (int i = 0; i < 8; i++) spawnDrip();
-            for (int i = 0; i < 6; i++) spawnBat();
         }
         dropT = Math.max(0f, dropT - delta * 1.1f);
 
@@ -1228,32 +1095,6 @@ public class MenuScreen extends ScreenAdapter {
         hourSpin = (hourSpin + delta * 14f * spin) % 360f;
         minSpin = (minSpin + delta * 90f * spin) % 360f;
         secSpin = (secSpin + delta * 200f * spin) % 360f;
-        dripCooldown -= delta;
-        batCooldown -= delta;
-        if (strongHit && beatViz.energy > 0.4f) {
-            if (dripCooldown <= 0f) {
-                spawnDrip();
-                dripCooldown = 0.18f;
-            }
-            if (batCooldown <= 0f && beatViz.energy > 0.7f) {
-                spawnBat();
-                batCooldown = 0.5f;
-            }
-        }
-
-        for (int i = 0; i < DRIPS; i++) {
-            if (dripLen[i] < 0f) continue;
-            dripV[i] += delta * 220f;
-            dripY[i] -= dripV[i] * delta;
-            dripLen[i] += dripV[i] * delta;
-            if (dripY[i] < visY - 10f) dripLen[i] = -1f;
-        }
-        for (int i = 0; i < BATS; i++) {
-            if (batS[i] <= 0f) continue;
-            batX[i] += batVX[i] * delta;
-            batY[i] += (batVY[i] + (float) Math.sin(time * 6f + batP[i]) * 120f) * delta;
-            if (batX[i] < visX - 120f || batX[i] > visX + visW + 120f) batS[i] = 0f;
-        }
     }
 
     private void drawGothicBack(SpriteBatch batch, float centerX, float centerY, float ui) {
@@ -1371,51 +1212,6 @@ public class MenuScreen extends ScreenAdapter {
         batch.setColor(1f, 1f, 1f, alpha * 0.62f);
         batch.draw(softRegion, centerX - 9f, centerY - 9f, 18f, 18f);
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        batch.setColor(Color.WHITE);
-    }
-
-    private void wingSegment(SpriteBatch batch, float x, float y, float length, float thickness, float angle) {
-        batch.draw(pixelRegion, x, y - thickness / 2f, 0f, thickness / 2f,
-            length, thickness, 1f, 1f, angle);
-    }
-
-    private void drawGothicFront(SpriteBatch batch, float ui) {
-        float intensity = GOTH_INTENSITY * ui;
-        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
-        for (int i = 0; i < BATS; i++) {
-            if (batS[i] <= 0f) continue;
-            float size = batS[i];
-            batch.setColor(0.75f, 0.75f, 0.75f, 0.35f * intensity);
-            batch.draw(softRegion, batX[i] - 50f * size, batY[i] - 40f * size,
-                100f * size, 80f * size);
-        }
-        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
-        for (int i = 0; i < DRIPS; i++) {
-            if (dripLen[i] < 0f) continue;
-            float trail = Math.min(dripLen[i], 90f + dripW[i] * 30f);
-            batch.setColor(0.65f, 0.65f, 0.65f, 0.9f * intensity);
-            batch.draw(pixelRegion, dripX[i] - dripW[i] / 2f, dripY[i], dripW[i], trail);
-            batch.draw(softRegion, dripX[i] - dripW[i] * 1.6f, dripY[i] - dripW[i] * 1.6f,
-                dripW[i] * 3.2f, dripW[i] * 3.2f);
-        }
-        for (int i = 0; i < BATS; i++) {
-            if (batS[i] <= 0f) continue;
-            float size = batS[i], x = batX[i], y = batY[i];
-            float flap = (float) Math.sin(time * 17f + batP[i]) * 38f;
-            batch.setColor(0.03f, 0.03f, 0.03f, 0.96f * intensity);
-            batch.draw(softRegion, x - 7f * size, y - 11f * size, 14f * size, 22f * size);
-            for (int side = -1; side <= 1; side += 2) {
-                float a1 = 18f + flap, a2 = -30f + flap * 0.5f;
-                float r1 = side > 0 ? a1 : 180f - a1;
-                float r2 = side > 0 ? a2 : 180f - a2;
-                float l1 = 30f * size, l2 = 26f * size;
-                float x2 = x + MathUtils.cosDeg(r1) * l1;
-                float y2 = y + MathUtils.sinDeg(r1) * l1;
-                wingSegment(batch, x, y, l1, 6f * size, r1);
-                wingSegment(batch, x2, y2, l2, 4.5f * size, r2);
-            }
-        }
         batch.setColor(Color.WHITE);
     }
 

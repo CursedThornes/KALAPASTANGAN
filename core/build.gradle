@@ -22,6 +22,16 @@ dependencies {
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }
+
+  testImplementation "junit:junit:4.13.2"
+}
+
+test {
+  testLogging {
+    events "failed", "skipped"
+  }
+  // the dialogue tests read ../assets, so keep the project dir as the working directory
+  workingDir = project.projectDir
 }
 
 jar {
