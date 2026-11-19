@@ -947,14 +947,14 @@ public class AustineBossBattle extends ScreenAdapter {
             enemyHp = Math.max(0, enemyHp - dmg);
             characterShakeTime = SHAKE_TIME;
             flash = 0.5f;
-            result = "* Sinaktan mo ang anino. (-" + dmg + ")";
+            result = "* You killed the enemy. (-" + dmg + ")";
             if (enemyHp <= 0) {
                 outcome = "killed";
-                result += " Naglaho ito.";
+                result += "* The enemy  has been defeated.";
             }
         } else if (i == 1) {
             defending = true;
-            result = "* Nagkubli ka. Mas mahina ang susunod na hampas.";
+            result = "* You didn't attack. Next swing is weaker.";
         } else if (i == 2) {
             trust++;
             result = REASON_LINES[Math.min(trust, REASON_LINES.length) - 1];
@@ -2467,8 +2467,8 @@ public class AustineBossBattle extends ScreenAdapter {
         batch.setColor(0f, 0f, 0f, 0.9f);
         batch.draw(pixel, visX, visY, visW, visH);
 
-        glyph.setText(titleFont, "TALA");
-        titleFont.draw(batch, "TALA", visX + visW / 2f - glyph.width / 2f, visY + visH - 40f);
+        glyph.setText(titleFont, "LOG");
+        titleFont.draw(batch, "LOG", visX + visW / 2f - glyph.width / 2f, visY + visH - 40f);
         batch.setColor(TEXT.r, TEXT.g, TEXT.b, 0.7f);
         batch.draw(pixel, panelX, visY + visH - 100f, panelW, 1.5f);
         uiFont.setColor(TEXT.r, TEXT.g, TEXT.b, 0.6f);
